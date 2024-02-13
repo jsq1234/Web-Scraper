@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.chrome.options import Options
 from tqdm import tqdm
+from halo import Halo
 
 
 class Scraper:
@@ -27,14 +28,18 @@ class Scraper:
             )
         )]
 
-    def scrape(self):
+    def scrape(self, N):
         self.driver.get(self.url)
 
-        print("Getting projects...")
+        spinner = Halo(text='Getting projects', spinner='dots3')
+        spinner.start()
         project_rows = self.get_project_rows()
         project_names = self.get_project_name()
-        links = self.get_links(project_rows)
-        print("\n\n")
+        links = self.get_links(project_rows, N)
+        spinner.stop()
+
+        print("")
+
         list = []
         idx = 0
         for link in tqdm(links):
@@ -70,9 +75,9 @@ class Scraper:
             )
         )
 
-    def get_links(self, project_rows):
+    def get_links(self, project_rows, N):
         """Returns 5 project links that is used to open the modal"""
-        return project_rows.find_elements(By.XPATH, self.project_links_query)[:5]
+        return project_rows.find_elements(By.XPATH, self.project_links_query)[:N]
 
     def get_menu_table(self):
         return WebDriverWait(self.driver, 30).until(
@@ -93,6 +98,6 @@ class Scraper:
 
 
 scraper = Scraper()
-project_list_info = scraper.scrape()
+project_list_info = scraper.scrape(5)
 
 print(project_list_info)
